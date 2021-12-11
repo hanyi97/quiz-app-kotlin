@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.nghanyi.quizapp.databinding.ActivityQuizQuestionBinding
 
@@ -14,11 +15,12 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var binding: ActivityQuizQuestionBinding // So no need to use findViewById
 
-    private var mCurrentPosition: Int = 1
-    private var mQuestionList: ArrayList<Question>? = null
-    private var mSelectedOptionPosition: Int = 0
-    private var mCorrectAnswers: Int = 0
     private var mUsername: String? = null
+    private var mCorrectAnswers: Int = 0
+    private var mCurrentPosition: Int = 1
+    private var mSelectedOptionPosition: Int = 0
+    private var mIsSubmit: Boolean = true
+    private var mQuestionList: ArrayList<Question>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +56,7 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
      * Set current question to be shown
      */
     private fun setQuestion() {
+        mIsSubmit = true
         val question = mQuestionList!![mCurrentPosition-1]
 
         defaultOptionsView()
@@ -126,7 +129,8 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
      */
     private fun checkAnswer() {
         if (mSelectedOptionPosition == 0) {
-            mCurrentPosition++
+            if (mIsSubmit)
+                Toast.makeText(this, "Please select an answer!", Toast.LENGTH_SHORT).show()
 
             when{
                 mCurrentPosition <= mQuestionList!!.size -> {
@@ -135,6 +139,7 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
                 } else -> showResultsActivity()
             }
         } else {
+            mIsSubmit = false
             val question = mQuestionList!![mCurrentPosition - 1]
             // Wrong answer
             if(question.correctAnswer != mSelectedOptionPosition) {
@@ -150,6 +155,8 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
             } else {
                 binding.btnSubmit.text = "GO TO NEXT QUESTION"
             }
+
+            mCurrentPosition++
             mSelectedOptionPosition = 0
         }
     }
