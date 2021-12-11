@@ -1,5 +1,5 @@
 # Quiz Application
-A simple quiz android application coded with Kotlin.  
+A simple quiz android app coded with Kotlin.  
 
 Special thanks to: https://www.youtube.com/watch?v=b21fiIyOW4A&ab_channel=tutorialsEU
 
