@@ -1,20 +1,14 @@
 package com.nghanyi.quizapp
 
-import android.graphics.Color
+import android.content.Intent
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.nghanyi.quizapp.databinding.ActivityMainBinding
 import com.nghanyi.quizapp.databinding.ActivityQuizQuestionBinding
-import org.w3c.dom.Text
 
 class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -23,11 +17,15 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
     private var mCurrentPosition: Int = 1
     private var mQuestionList: ArrayList<Question>? = null
     private var mSelectedOptionPosition: Int = 0
+    private var mCorrectAnswers: Int = 0
+    private var mUsername: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityQuizQuestionBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
+
+        mUsername = intent.getStringExtra(Constants.USER_NAME)
 
         mQuestionList = Constants.getQuestions()
         mCurrentPosition = 1
@@ -134,17 +132,15 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
                 mCurrentPosition <= mQuestionList!!.size -> {
                     setQuestion()
                     setProgress()
-                } else -> {
-                Toast.makeText(this,
-                    "You have successfully completed the Quiz",
-                    Toast.LENGTH_SHORT).show()
-                }
+                } else -> showResultsActivity()
             }
         } else {
             val question = mQuestionList!![mCurrentPosition - 1]
             // Wrong answer
             if(question.correctAnswer != mSelectedOptionPosition) {
                 answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
+            } else {
+                mCorrectAnswers++
             }
             // Show correct answer
             answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
@@ -156,5 +152,17 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
             }
             mSelectedOptionPosition = 0
         }
+    }
+
+    /**
+     * Navigate to result screen
+     */
+    private fun showResultsActivity() {
+        val intent = Intent(this, ResultActivity::class.java)
+        intent.putExtra(Constants.USER_NAME, mUsername)
+        intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
+        intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionList!!.size)
+        startActivity(intent)
+        finish()
     }
 }

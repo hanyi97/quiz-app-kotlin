@@ -48,7 +48,6 @@
                 android:max="10"
                 android:minHeight="50dp"
                 android:indeterminate="false"
-                android:indeterminateTint="@color/colorPrimary"
                 android:layout_weight="1"
                 android:progress="0"/>
             <TextView
