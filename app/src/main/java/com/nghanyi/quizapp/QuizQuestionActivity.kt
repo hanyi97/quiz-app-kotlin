@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.nghanyi.quizapp.databinding.ActivityMainBinding
 import com.nghanyi.quizapp.databinding.ActivityQuizQuestionBinding
@@ -17,11 +18,11 @@ import org.w3c.dom.Text
 
 class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
 
+    private lateinit var binding: ActivityQuizQuestionBinding // So no need to use findViewById
+
     private var mCurrentPosition: Int = 1
     private var mQuestionList: ArrayList<Question>? = null
     private var mSelectedOptionPosition: Int = 0
-
-    private lateinit var binding: ActivityQuizQuestionBinding // So no need to use findViewById
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +33,23 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
         mCurrentPosition = 1
 
         setQuestion()
-        showProgress()
+        setProgress()
 
         binding.tvOptionOne.setOnClickListener(this)
         binding.tvOptionTwo.setOnClickListener(this)
         binding.tvOptionThree.setOnClickListener(this)
         binding.tvOptionFour.setOnClickListener(this)
+        binding.btnSubmit.setOnClickListener(this)
+    }
 
+    override fun onClick(v: View?) {
+        when(v?.id) {
+            R.id.tv_option_one -> selectedOptionView(binding.tvOptionOne, 1)
+            R.id.tv_option_two -> selectedOptionView(binding.tvOptionTwo, 2)
+            R.id.tv_option_three -> selectedOptionView(binding.tvOptionThree, 3)
+            R.id.tv_option_four -> selectedOptionView(binding.tvOptionFour, 4)
+            R.id.btn_submit -> checkAnswer()
+        }
     }
 
     /**
@@ -48,6 +59,12 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
         val question = mQuestionList!![mCurrentPosition-1]
 
         defaultOptionsView()
+
+        if (mCurrentPosition == mQuestionList!!.size) {
+            binding.btnSubmit.text = "FINISH"
+        } else {
+            binding.btnSubmit.text = "SUBMIT"
+        }
 
         binding.ivImage.setImageResource(question.image)
         binding.tvQuestion.text = question.question
@@ -60,11 +77,14 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
     /**
      * Set current progress of user
      */
-    private fun showProgress() {
+    private fun setProgress() {
         binding.progressBar.progress = mCurrentPosition
         binding.tvProgress.text = "$mCurrentPosition/${binding.progressBar.max}"
     }
 
+    /**
+     * Set all options to default
+     */
     private fun defaultOptionsView() {
         val options = ArrayList<TextView>()
         options.add(0, binding.tvOptionOne)
@@ -79,20 +99,62 @@ class QuizQuestionActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    override fun onClick(v: View?) {
-        when(v?.id) {
-            R.id.tv_option_one -> selectedOptionView(binding.tvOptionOne, 1)
-            R.id.tv_option_two -> selectedOptionView(binding.tvOptionTwo, 2)
-            R.id.tv_option_three -> selectedOptionView(binding.tvOptionThree, 3)
-            R.id.tv_option_four -> selectedOptionView(binding.tvOptionFour, 4)
-        }
-    }
-
+    /**
+     * Set selected option
+     */
     private fun selectedOptionView(tv: TextView, selectedOptionNum: Int) {
         defaultOptionsView()
         mSelectedOptionPosition = selectedOptionNum
         tv.setTypeface(tv.typeface, Typeface.BOLD)
         tv.setTextColor(ContextCompat.getColor(this, R.color.gray))
         tv.background = ContextCompat.getDrawable(this, R.drawable.selected_option_border_bg)
+    }
+
+    /**
+     * Display answer border accordingly
+     */
+    private fun answerView(answer: Int, drawableView: Int) {
+        when(answer) {
+            1 -> binding.tvOptionOne.background = ContextCompat.getDrawable(this, drawableView)
+            2 -> binding.tvOptionTwo.background = ContextCompat.getDrawable(this, drawableView)
+            3 -> binding.tvOptionThree.background = ContextCompat.getDrawable(this, drawableView)
+            4 -> binding.tvOptionFour.background = ContextCompat.getDrawable(this, drawableView)
+
+        }
+    }
+
+    /**
+     * Check if answer is correct.
+     */
+    private fun checkAnswer() {
+        if (mSelectedOptionPosition == 0) {
+            mCurrentPosition++
+
+            when{
+                mCurrentPosition <= mQuestionList!!.size -> {
+                    setQuestion()
+                    setProgress()
+                } else -> {
+                Toast.makeText(this,
+                    "You have successfully completed the Quiz",
+                    Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            val question = mQuestionList!![mCurrentPosition - 1]
+            // Wrong answer
+            if(question.correctAnswer != mSelectedOptionPosition) {
+                answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
+            }
+            // Show correct answer
+            answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
+
+            if (mCurrentPosition == mQuestionList!!.size) {
+                binding.btnSubmit.text = "FINISH"
+            } else {
+                binding.btnSubmit.text = "GO TO NEXT QUESTION"
+            }
+            mSelectedOptionPosition = 0
+        }
     }
 }
