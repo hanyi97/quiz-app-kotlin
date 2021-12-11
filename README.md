@@ -1,2 +1,2 @@
-# quiz-app-kotlin
+# Quiz Application
 A quiz application coded with Kotlin
